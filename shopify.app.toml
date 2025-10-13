@@ -1,0 +1,42 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "f39b70fd55542365c109655d5335793e"
+name = "Dispatch Solutions"
+application_url = "https://tion-britain-timer-roman.trycloudflare.com"   # DEV: CLI isse override karta hai; PROD me apni live URL set karein
+embedded = true
+handle = "dispatch-solutions-1"
+
+[build]
+automatically_update_urls_on_dev = true
+# dev_store_url = "dispatchsolutions-2.myshopify.com"
+# include_config_on_deploy = true
+
+[webhooks]
+api_version = "2025-07"
+
+  [[webhooks.subscriptions]]
+  topics = ["app/scopes_update"]
+  uri = "/webhooks/app/scopes_update"
+
+  [[webhooks.subscriptions]]
+  topics = ["app/uninstalled"]
+  uri = "/webhooks/app/uninstalled"
+
+  # Orders webhook — delivery ke liye public tunnel chahiye (localhost par direct deliver nahi hota)
+  [[webhooks.subscriptions]]
+  topics = ["orders/create"]
+  uri = "/webhooks/orders/create"
+
+[access_scopes]
+# Minimal useful scopes for your use-case (orders + fulfillments + products read)
+scopes = "read_products,read_orders,read_fulfillments,write_fulfillments,write_products"
+
+[auth]
+redirect_urls = [
+  "https://tion-britain-timer-roman.trycloudflare.com/auth/callback",
+  "https://tion-britain-timer-roman.trycloudflare.com/auth"
+]
+
+
+[pos]
+embedded = false
