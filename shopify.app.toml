@@ -2,7 +2,7 @@
 
 client_id = "f39b70fd55542365c109655d5335793e"
 name = "Dispatch Solutions"
-application_url = "https://tion-britain-timer-roman.trycloudflare.com"   # DEV: CLI isse override karta hai; PROD me apni live URL set karein
+application_url = "https://worth-treasurer-frankfurt-qualification.trycloudflare.com"   # DEV: CLI isse override karta hai; PROD me apni live URL set karein
 embedded = true
 handle = "dispatch-solutions-1"
 
@@ -33,8 +33,8 @@ scopes = "read_products,read_orders,read_fulfillments,write_fulfillments,write_p
 
 [auth]
 redirect_urls = [
-  "https://tion-britain-timer-roman.trycloudflare.com/auth/callback",
-  "https://tion-britain-timer-roman.trycloudflare.com/auth"
+  "https://robinson-staying-buyers-vampire.trycloudflare.com/auth/callback",
+  "https://robinson-staying-buyers-vampire.trycloudflare.com/auth"
 ]
 
 

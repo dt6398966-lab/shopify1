@@ -10,6 +10,27 @@ import{ mySqlQury } from "../dbMysl";
 // Always use the Webhook secret (NOT API secret)
 const SHOPIFY_SECRET = process.env.SHOPIFY_WEBHOOK_SECRET?.trim() || "0911e8eed2d9783ad6d2b25b261b300e8d9f9af4340c59c775e663586f67a89a";
 
+// Helper function to get client ID from shop domain
+async function getClientIdFromShop(shopDomain) {
+  try {
+    const integrations = await mySqlQury(
+      "SELECT clientId FROM tbl_shopify_integration WHERE shopyfy_url = ? LIMIT 1",
+      [shopDomain]
+    );
+    
+    if (integrations && integrations.length > 0) {
+      return integrations[0].clientId;
+    }
+    
+    // Default to client ID 1 if not found
+    console.log(`⚠️ No integration found for shop ${shopDomain}, using default client ID 1`);
+    return 1;
+  } catch (error) {
+    console.error("❌ Error getting client ID:", error);
+    return 1; // Default fallback
+  }
+}
+
 export const action = async ({ request }) => {
   try {
     console.log("📦 Incoming webhook...");
@@ -60,9 +81,9 @@ export const action = async ({ request }) => {
     await mySqlQury("START TRANSACTION");
 
     try {
-      // ⚠️ Check duplicate order
+      // ⚠️ Check duplicate order (using Shopify internal ID)
       const [existing] = await mySqlQury(
-        `SELECT id FROM tbl_ecom_orders WHERE orderid = ? LIMIT 1`,
+        `SELECT id FROM tbl_ecom_orders WHERE orderid = ? AND channel = 'shopify' LIMIT 1`,
         [payload.id]
       );
        
@@ -84,28 +105,68 @@ export const action = async ({ request }) => {
       // -------------------------------
       // 1️⃣ Insert into tbl_ecom_orders
       // -------------------------------
+      // Get client ID from shop domain
+      const clientId = await getClientIdFromShop(shop);
+      
+      // Enhanced payment mode detection for COD orders
+      const isCodOrder = () => {
+        // Check payment_gateway_names array first (most reliable)
+        if (payload.payment_gateway_names && Array.isArray(payload.payment_gateway_names)) {
+          return payload.payment_gateway_names.some(gateway => 
+            String(gateway).toLowerCase().includes('cod') || 
+            String(gateway).toLowerCase().includes('cash on delivery')
+          );
+        }
+        // Check single gateway field
+        if (payload.gateway && String(payload.gateway).toLowerCase().includes('cod')) {
+          return true;
+        }
+        // Check if financial_status is pending and no payment gateway (likely COD)
+        if (payload.financial_status === 'pending' && !payload.payment_gateway_names && !payload.gateway) {
+          return true;
+        }
+        return false;
+      };
+      
+      const paymentMode = (payload.financial_status === 'paid')
+        ? 'prepaid'
+        : isCodOrder() ? 'cod' : 'prepaid';
+      
+      const collectableAmount = (paymentMode === 'cod') 
+        ? parseFloat(payload.total_price) 
+        : 0;
+
+      // Get warehouse ID for this client
+      const whRows = await mySqlQury(
+        'SELECT serial FROM tbl_add_warehouse WHERE client_id = ? LIMIT 1',
+        [clientId]
+      );
+      const whId = whRows?.[0]?.serial ?? null;
+
+      // Calculate total quantity
+      const totalQty = (payload.line_items || []).reduce((acc, item) => acc + (Number(item.quantity) || 0), 0);
+
       const orderResult = await mySqlQury(
         `INSERT INTO tbl_ecom_orders 
          (channel, ref_number, orderid, invoice_no, client_id, payment_mode, collectable_amount, warehouse_id, total_weight, weight_unit, grand_total, total_qty, box_qty, total_tax, total_discount, is_unprocessed)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           "shopify", // channel
-         String(payload.name) || null, // ref_number
-          String(payload.order_number) || null, // orderid
+          String(payload.order_number) || null, // ref_number (human-readable order number)
+          Number(payload.id), // orderid (Shopify internal ID)
           String(payload.order_number) || null, // invoice_no
-          0, // client_id
-          String(payload.order_number) || null, // invoice_no
-          String(payload.payment_terms) || null, // payment_mode
-          Number(payload.total_price) || 0, // collectable_amount
-          null, // warehouse_id
-          Number(payload.total_weight) || 0,
-          "gm",
-          Number(payload.total_price) || 0,
-          Number(payload.line_items?.quantity) || 0,
-          1,
-          Number(payload.total_tax) || 0,
-          Number(payload.total_discounts) || 0,
-          1
+          Number(clientId), // client_id
+          paymentMode, // payment_mode
+          collectableAmount, // collectable_amount
+          whId, // warehouse_id
+          Number(payload.total_weight) || 0, // total_weight
+          "gm", // weight_unit
+          Number(payload.total_price) || 0, // grand_total
+          Number(totalQty), // total_qty
+          1, // box_qty
+          Number(payload.total_tax) || 0, // total_tax
+          Number(payload.total_discounts) || 0, // total_discount
+          0 // is_unprocessed
         ]
       );
 

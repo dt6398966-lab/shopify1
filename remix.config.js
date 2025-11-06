@@ -109,15 +109,11 @@ export default {
   serverModuleFormat: "esm",
   serverDependenciesToBundle: [
     /^@shopify/,
+    "axios",
   ],
   future: {
     v3_fetcherPersist: true,
     v3_relativeSplatPath: true,
     v3_throwAbortReason: true,
   },
-  // 👇 Add this extra loader so JSON is auto-handled as ESM
-  serverBuildTarget: "node-cjs",
-  serverBuildFile: "index.js",
-  serverMinify: false,
-  watchPaths: ["./locales", "./public"],
 };
