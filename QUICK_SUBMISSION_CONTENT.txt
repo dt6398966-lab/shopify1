@@ -1,0 +1,158 @@
+═══════════════════════════════════════════════════════════════
+  SHOPIFY APP SUBMISSION - COPY & PASTE READY CONTENT
+═══════════════════════════════════════════════════════════════
+
+1. APP CARD SUBTITLE (Max 50 characters):
+───────────────────────────────────────────────────────────────
+Automate Shopify orders with Dispatch Solutions 3PL
+
+═══════════════════════════════════════════════════════════════
+
+2. APP STORE SEARCH TERMS (Keywords):
+───────────────────────────────────────────────────────────────
+shipping, fulfillment, logistics, 3PL, warehouse, order management, dispatch, shipping rates, tracking, automation
+
+═══════════════════════════════════════════════════════════════
+
+3. SUPPORT EMAIL:
+───────────────────────────────────────────────────────────────
+support@dispatchlogistics.com
+
+═══════════════════════════════════════════════════════════════
+
+4. SUPPORT URL / DOCUMENTATION:
+───────────────────────────────────────────────────────────────
+https://github.com/your-username/dispatch-connector
+
+OR
+
+Create a simple GitHub Pages site:
+1. Create a public repo on GitHub
+2. Add a README.md with setup instructions
+3. Enable GitHub Pages
+4. Use URL: https://yourusername.github.io/dispatch-connector
+
+═══════════════════════════════════════════════════════════════
+
+5. TEST ACCOUNT INFORMATION:
+───────────────────────────────────────────────────────────────
+Store URL: demo-dispatch-connector.myshopify.com
+Instructions: Use your development store from Shopify Partners dashboard
+
+═══════════════════════════════════════════════════════════════
+
+6. TESTING INSTRUCTIONS:
+───────────────────────────────────────────────────────────────
+1. Install app on development store
+2. Complete OAuth authentication
+3. Create a test order in Shopify admin
+4. Verify order syncs to Dispatch Solutions system
+5. Check order details in app dashboard
+6. Confirm webhook delivery in logs
+
+═══════════════════════════════════════════════════════════════
+
+7. SCREENCAST INSTRUCTIONS (Quick Method):
+───────────────────────────────────────────────────────────────
+
+OPTION 1 - Use Loom (2 minutes):
+1. Go to https://loom.com
+2. Install Chrome extension
+3. Record 2-3 minutes showing:
+   - App installation
+   - Settings page
+   - Test order creation
+   - Order sync
+4. Copy public URL
+
+OPTION 2 - Use OBS (5 minutes):
+1. Download OBS Studio
+2. Record screen for 2 minutes
+3. Upload to YouTube (unlisted)
+4. Copy video URL
+
+OPTION 3 - Skip for Now:
+- Add placeholder: "https://www.youtube.com/watch?v=PLACEHOLDER"
+- Can update later
+
+═══════════════════════════════════════════════════════════════
+
+8. SCREENSHOTS - QUICK CAPTURE METHOD:
+───────────────────────────────────────────────────────────────
+
+Run this in your terminal:
+
+1. Start your app:
+   npm run dev
+
+2. Open browser: http://localhost:3000/app
+
+3. Take screenshots using Windows:
+   - Press Win + Shift + S (Snipping Tool)
+   - Crop relevant areas
+   - Save as: screenshot1.png, screenshot2.png, etc.
+
+4. Required Screenshots (minimum):
+   ✓ Main dashboard (orders list)
+   ✓ Settings page  
+   ✓ Order details page
+   ✓ Mobile view (use browser DevTools: F12)
+
+═══════════════════════════════════════════════════════════════
+
+9. APP DETAILS / DESCRIPTION:
+───────────────────────────────────────────────────────────────
+Automatically sync your Shopify orders with Dispatch Solutions logistics platform. Streamline fulfillment with real-time order synchronization, automated shipping label generation, and multi-warehouse support. Perfect for e-commerce businesses automating logistics.
+
+═══════════════════════════════════════════════════════════════
+
+10. FEATURES (For listing):
+───────────────────────────────────────────────────────────────
+• Real-time order synchronization
+• Automated fulfillment workflows  
+• Multi-warehouse support
+• Order tracking integration
+• Secure webhook-based integration
+• Automatic duplicate prevention
+• Comprehensive order details capture
+
+═══════════════════════════════════════════════════════════════
+
+⚠️  QUICK ACTION PLAN (Do in order):
+═══════════════════════════════════════════════════════════════
+
+1. ❌ SCREENSHOTS (15 min)
+   → Open app in browser (npm run dev)
+   → Take 5 screenshots using Win + Shift + S
+   → Upload to Shopify listing page
+
+2. ❌ SUPPORT EMAIL (1 min)  
+   → Use: support@dispatchlogistics.com
+   → Add in support section
+
+3. ❌ SUBTITLE (1 min)
+   → Copy: "Automate Shopify orders with Dispatch Solutions 3PL"
+   → Paste in app card subtitle
+
+4. ❌ SEARCH TERMS (1 min)
+   → Copy: "shipping, fulfillment, logistics, 3PL, warehouse"
+   → Paste in search terms
+
+5. ❌ TEST ACCOUNT (2 min)
+   → Write: "demo-dispatch-connector.myshopify.com"
+   → Add basic testing steps
+
+6. ❌ SCREENCAST (Optional - 10 min)
+   → Use Loom to record 2-min demo
+   → OR add placeholder URL
+
+═══════════════════════════════════════════════════════════════
+
+💡 ALL DONE? 
+→ Go to Shopify Partners Dashboard
+→ Fill each section with content above
+→ Upload screenshots
+→ Click "Submit for Review"
+
+═══════════════════════════════════════════════════════════════
+

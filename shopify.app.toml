@@ -1,0 +1,46 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "f39b70fd55542365c109655d5335793e"
+name = "Dispatch Solutions"
+application_url = "https://pools-nicole-growing-divine.trycloudflare.com"   # DEV: CLI isse override karta hai; PROD me apni live URL set karein
+embedded = true
+handle = "dispatch-solutions-1"
+
+[build]
+automatically_update_urls_on_dev = true
+# dev_store_url = "dispatchsolutions-2.myshopify.com"
+# include_config_on_deploy = true
+
+[webhooks]
+api_version = "2025-07"
+
+  # Mandatory compliance webhooks (GDPR) - Required for app store
+  [[webhooks.subscriptions]]
+  compliance_topics = ["customers/data_request", "customers/redact", "shop/redact"]
+  uri = "/webhooks"
+
+  # Mandatory app lifecycle webhooks
+  [[webhooks.subscriptions]]
+  topics = ["app/uninstalled"]
+  uri = "/webhooks/app/uninstalled"
+
+  # Orders webhook
+  [[webhooks.subscriptions]]
+  topics = ["orders/create"]
+  uri = "/webhooks/orders/create"
+
+[access_scopes]
+# Minimal useful scopes for your use-case (orders + fulfillments + products read)
+scopes = "read_orders,write_orders,read_products,write_products,read_metaobjects,write_metaobjects,read_metaobject_definitions,write_metaobject_definitions"
+
+# scopes = "read_products,read_themes,read_files,write_files,read_metaobject_definitions,write_metaobject_definitions,read_metaobjects,write_metaobjects,read_orders"
+
+[auth]
+redirect_urls = [
+  "https://pools-nicole-growing-divine.trycloudflare.com/auth/callback",
+  "https://pools-nicole-growing-divine.trycloudflare.com/auth"
+]
+
+
+[pos]
+embedded = false
