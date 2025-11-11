@@ -1,0 +1,33 @@
+# Copy this file to .env and fill in your actual values
+
+# Shopify App Configuration
+SHOPIFY_API_KEY=your_shopify_api_key_here
+SHOPIFY_API_SECRET=your_shopify_api_secret_here
+# For Development: Leave empty or use Cloudflare tunnel URL (CLI will auto-update this)
+# For Production: Use your production domain (e.g., https://app.yourdomain.com)
+SHOPIFY_APP_URL=
+# Note: Shopify CLI automatically sets SHOPIFY_APP_URL when using 'npm run dev'
+SCOPES=read_orders,write_orders,read_products,write_products,read_metaobjects,write_metaobjects,read_metaobject_definitions,write_metaobject_definitions
+
+# Database Configuration (Prisma)
+DATABASE_URL=mysql://username:password@localhost:3306/database_name
+
+# MySQL Direct Connection (for dbMysl.js)
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=your_password
+MYSQL_DATABASE=dsnew03
+MYSQL_PORT=3306
+MYSQL_CONNECTION_LIMIT=100
+
+# Node Environment
+NODE_ENV=development
+
+# Optional: Custom Shop Domain (if using custom domains)
+# SHOP_CUSTOM_DOMAIN=your-custom-domain.com
+
+# Cloudflare Tunnel (Optional - CLI handles automatically)
+# For development, Shopify CLI automatically creates and manages Cloudflare tunnels
+# You only need to set this if you want to use a specific tunnel URL
+# CLOUDFLARE_TUNNEL_URL=https://your-tunnel-url.trycloudflare.com
+

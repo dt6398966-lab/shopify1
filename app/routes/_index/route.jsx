@@ -19,9 +19,9 @@ export default function App() {
   return (
     <div className={styles.index}>
       <div className={styles.content}>
-        <h1 className={styles.heading}>A short heading about [your app]</h1>
+        <h1 className={styles.heading}>Dispatch Solutions - Shopify Integration</h1>
         <p className={styles.text}>
-          A tagline about [your app] that describes your value proposition.
+          Seamlessly connect your Shopify store with Dispatch Solutions logistics platform. Automatically sync orders, manage shipments, and track deliveries all in one place.
         </p>
         {showForm && (
           <Form className={styles.form} method="post" action="/auth/login">
@@ -31,22 +31,19 @@ export default function App() {
               <span>e.g: my-shop-domain.myshopify.com</span>
             </label>
             <button className={styles.button} type="submit">
-              Log in
+              Connect Store
             </button>
           </Form>
         )}
         <ul className={styles.list}>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Automatic Order Sync</strong>. Orders from your Shopify store are automatically imported into Dispatch Solutions for seamless logistics management.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Real-time Tracking</strong>. Track shipments and deliveries in real-time with automatic updates to your Shopify orders.
           </li>
           <li>
-            <strong>Product feature</strong>. Some detail about your feature and
-            its benefit to your customer.
+            <strong>Complete Integration</strong>. Full integration with product details, customer information, and shipping addresses for accurate fulfillment.
           </li>
         </ul>
       </div>

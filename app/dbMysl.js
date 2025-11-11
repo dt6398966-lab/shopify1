@@ -1,13 +1,14 @@
 // ✅ app/dbMysql.js
 import mysql from "mysql2";
 
-// Create a connection pool
+// Create a connection pool using environment variables
 const conn = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "",
-  database: "dispatch1",
-  connectionLimit: 100,
+  host: process.env.MYSQL_HOST || "localhost",
+  user: process.env.MYSQL_USER || "root",
+  password: process.env.MYSQL_PASSWORD || "",
+  database: process.env.MYSQL_DATABASE || "dsnew03",
+  port: parseInt(process.env.MYSQL_PORT || "3306", 10),
+  connectionLimit: parseInt(process.env.MYSQL_CONNECTION_LIMIT || "100", 10),
 });
 
 // ✅ Connection test

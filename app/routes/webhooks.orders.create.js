@@ -15,13 +15,8 @@ async function fetchCompleteOrderData(shop, orderId, accessToken) {
           id
           name
           email
-          customer {
-            id
-            email
-            firstName
-            lastName
-            phone
-          }
+          # Note: customer field removed - requires read_customers scope
+          # Customer data is available in webhook payload, so we use that instead
           shippingAddress {
             firstName
             lastName
@@ -43,7 +38,6 @@ async function fetchCompleteOrderData(shop, orderId, accessToken) {
             zip
             country
             phone
-            email
           }
           shippingLines(first: 10) {
             edges {
@@ -71,7 +65,6 @@ async function fetchCompleteOrderData(shop, orderId, accessToken) {
                 id
                 title
                 quantity
-                grams
                 originalUnitPriceSet {
                   shopMoney {
                     amount
@@ -84,12 +77,19 @@ async function fetchCompleteOrderData(shop, orderId, accessToken) {
                   title
                   weight
                   weightUnit
-                  length
-                  width
-                  height
                   selectedOptions {
                     name
                     value
+                  }
+                  metafields(first: 10) {
+                    edges {
+                      node {
+                        namespace
+                        key
+                        value
+                        type
+                      }
+                    }
                   }
                 }
               }
@@ -156,13 +156,9 @@ async function fetchCompleteOrderData(shop, orderId, accessToken) {
         phone: orderData.billingAddress.phone || null,
         email: orderData.billingAddress.email || null,
       } : null,
-      customer: orderData.customer ? {
-        id: BigInt(orderData.customer.id.split('/').pop()),
-        email: orderData.customer.email || null,
-        first_name: orderData.customer.firstName || null,
-        last_name: orderData.customer.lastName || null,
-        phone: orderData.customer.phone || null,
-      } : null,
+      // Customer data not available in GraphQL (requires read_customers scope)
+      // Will use customer data from webhook payload instead
+      customer: null,
       shipping_lines: orderData.shippingLines?.edges?.map(edge => {
         const node = edge.node;
         const originalAmount = node.originalPriceSet?.shopMoney?.amount || "0.00";
@@ -199,17 +195,110 @@ async function fetchCompleteOrderData(shop, orderId, accessToken) {
       email: orderData.email || null,
       line_items_with_dimensions: orderData.lineItems?.edges?.map(edge => {
         const node = edge.node;
+        const variant = node.variant;
+        
+        // Extract dimensions from metafields
+        let length = null;
+        let width = null;
+        let height = null;
+        
+        if (variant?.metafields?.edges) {
+          console.log(`   🔍 Checking metafields for variant ${variant.id}:`);
+          variant.metafields.edges.forEach(metafieldEdge => {
+            const metafield = metafieldEdge.node;
+            const namespace = metafield.namespace;
+            const key = metafield.key;
+            const value = metafield.value;
+            const type = metafield.type;
+            
+            console.log(`      Metafield: ${namespace}.${key} (type: ${type}) = ${value}`);
+            
+            // Check for dimensions in metafields
+            // Common patterns: shipping.length, shipping.width, shipping.height
+            // or custom namespaces like uship.length, etc.
+            // Also check any namespace that might contain dimensions
+            if (namespace === 'shipping' || namespace === 'uship' || namespace === 'custom' || 
+                key?.toLowerCase().includes('length') || key?.toLowerCase().includes('width') || 
+                key?.toLowerCase().includes('height') || key?.toLowerCase().includes('dimension')) {
+              try {
+                // Metafield value might be JSON or plain number
+                let dimensionValue = null;
+                if (type === 'dimension' || type === 'dimension_reference') {
+                  // Dimension type is stored as JSON: {"value": 19, "unit": "cm"}
+                  const parsed = JSON.parse(value);
+                  dimensionValue = Number(parsed.value || parsed);
+                  console.log(`      ✅ Parsed dimension: ${dimensionValue} (from ${type})`);
+                } else {
+                  // Plain number or string number
+                  dimensionValue = Number(value);
+                  if (!isNaN(dimensionValue)) {
+                    console.log(`      ✅ Parsed dimension: ${dimensionValue} (from number)`);
+                  }
+                }
+                
+                const keyLower = key?.toLowerCase() || '';
+                if (keyLower.includes('length') || key === 'length' || key === 'Length') {
+                  length = dimensionValue;
+                } else if (keyLower.includes('width') || key === 'width' || key === 'Width') {
+                  width = dimensionValue;
+                } else if (keyLower.includes('height') || key === 'height' || key === 'Height') {
+                  height = dimensionValue;
+                }
+              } catch (e) {
+                // If parsing fails, try direct number conversion
+                const numValue = Number(value);
+                if (!isNaN(numValue)) {
+                  const keyLower = key?.toLowerCase() || '';
+                  if (keyLower.includes('length') || key === 'length' || key === 'Length') {
+                    length = numValue;
+                    console.log(`      ✅ Set length: ${length}`);
+                  } else if (keyLower.includes('width') || key === 'width' || key === 'Width') {
+                    width = numValue;
+                    console.log(`      ✅ Set width: ${width}`);
+                  } else if (keyLower.includes('height') || key === 'height' || key === 'Height') {
+                    height = numValue;
+                    console.log(`      ✅ Set height: ${height}`);
+                  }
+                } else {
+                  console.log(`      ⚠️ Could not parse dimension value: ${value}`);
+                }
+              }
+            }
+          });
+          
+          if (length || width || height) {
+            console.log(`   ✅ Found dimensions from metafields: L=${length}cm, W=${width}cm, H=${height}cm`);
+          } else {
+            console.log(`   ⚠️ No dimensions found in metafields`);
+          }
+        }
+        
+        // Convert weight to grams
+        let weight_grams = 0;
+        if (variant?.weight) {
+          const weight = Number(variant.weight);
+          const weightUnit = variant.weightUnit?.toLowerCase() || 'g';
+          if (weightUnit === 'kg' || weightUnit === 'kilograms') {
+            weight_grams = weight * 1000;
+          } else if (weightUnit === 'g' || weightUnit === 'grams') {
+            weight_grams = weight;
+          } else if (weightUnit === 'lb' || weightUnit === 'pounds') {
+            weight_grams = weight * 453.592;
+          } else if (weightUnit === 'oz' || weightUnit === 'ounces') {
+            weight_grams = weight * 28.3495;
+          }
+        }
+        
         return {
           id: node.id,
           title: node.title,
           quantity: node.quantity,
-          variant_id: node.variant?.id?.split('/').pop() || null,
-          weight_grams: node.grams || node.variant?.weight || 0,
-          weight_unit: node.variant?.weightUnit?.toLowerCase() || 'g',
-          // Real dimensions from Shopify product variant
-          length: node.variant?.length || null,
-          width: node.variant?.width || null,
-          height: node.variant?.height || null,
+          variant_id: variant?.id?.split('/').pop() || null,
+          weight_grams: weight_grams,
+          weight_unit: variant?.weightUnit?.toLowerCase() || 'g',
+          length: length,
+          width: width,
+          height: height,
         };
       }) || [],
     };
@@ -220,67 +309,54 @@ async function fetchCompleteOrderData(shop, orderId, accessToken) {
 }
 
 /**
- * Fetch product variant dimensions from Shopify Admin API
+ * Fetch product variant dimensions from Shopify Admin API using REST API
+ * This is a fallback method to get dimensions that might be stored in the variant's physical properties
  */
-async function fetchProductVariantDimensions(shop, variantIds, accessToken) {
+async function fetchProductVariantDimensionsREST(shop, variantIds, accessToken) {
   try {
     if (!variantIds || variantIds.length === 0) {
       return {};
     }
 
-    // Fetch variants in batches (GraphQL supports up to 20 IDs per query)
-    const batchSize = 20;
     const dimensionMap = {};
     
-    for (let i = 0; i < variantIds.length; i += batchSize) {
-      const batch = variantIds.slice(i, i + batchSize);
-      const variantGids = batch.map(id => `gid://shopify/ProductVariant/${id}`);
-      
-      const graphqlQuery = `
-        query getVariants($ids: [ID!]!) {
-          nodes(ids: $ids) {
-            ... on ProductVariant {
-              id
-              weight
-              weightUnit
+    // Fetch each variant using REST API (more reliable for physical dimensions)
+    for (const variantId of variantIds) {
+      try {
+        const response = await fetch(
+          `https://${shop}/admin/api/2025-01/variants/${variantId}.json`,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Shopify-Access-Token': accessToken,
             }
           }
-        }
-      `;
+        );
 
-      const response = await fetch(`https://${shop}/admin/api/2025-01/graphql.json`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Shopify-Access-Token': accessToken,
-        },
-        body: JSON.stringify({
-          query: graphqlQuery,
-          variables: {
-            ids: variantGids
+        if (response.ok) {
+          const result = await response.json();
+          const variant = result.variant;
+          
+          if (variant) {
+            dimensionMap[variantId] = {
+              weight: variant.weight || 0,
+              weight_unit: variant.weight_unit || 'g',
+              // REST API might have dimensions in different fields
+              // Check if dimensions are in the variant object
+              length: variant.length || null,
+              width: variant.width || null,
+              height: variant.height || null,
+            };
           }
-        })
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.data?.nodes) {
-          result.data.nodes.forEach(node => {
-            if (node) {
-              const variantId = node.id.split('/').pop();
-              dimensionMap[variantId] = {
-                weight: node.weight || 0,
-                weightUnit: node.weightUnit?.toLowerCase() || 'g',
-              };
-            }
-          });
         }
+      } catch (err) {
+        console.error(`❌ Error fetching variant ${variantId}:`, err.message);
       }
     }
 
     return dimensionMap;
   } catch (error) {
-    console.error("❌ Error fetching variant dimensions:", error);
+    console.error("❌ Error fetching variant dimensions via REST:", error);
     return {};
   }
 }
@@ -488,6 +564,18 @@ export const action = async ({ request }) => {
           completeOrderData = await fetchCompleteOrderData(shop, payload.id, session.accessToken);
           
           if (completeOrderData) {
+            // Extract variant IDs from line items for REST API fallback
+            const variantIds = payload.line_items
+              ?.map(item => item.variant_id)
+              .filter(id => id) || [];
+            
+            // Try REST API as fallback if dimensions not found in GraphQL
+            let restDimensions = {};
+            if (variantIds.length > 0) {
+              console.log("🔍 Trying REST API to fetch variant dimensions...");
+              restDimensions = await fetchProductVariantDimensionsREST(shop, variantIds, session.accessToken);
+            }
+            
             // Merge line items with weight and dimension information
             const enrichedLineItems = payload.line_items?.map(item => {
               // Find matching item from GraphQL response
@@ -495,27 +583,37 @@ export const action = async ({ request }) => {
                 li => String(li.id) === String(item.id)
               );
               
+              // Check REST API fallback for dimensions
+              const variantId = item.variant_id;
+              const restDim = restDimensions[variantId] || {};
+              
+              // Use GraphQL dimensions first, fallback to REST API, then webhook payload
+              const finalLength = enrichedItem?.length || restDim.length || null;
+              const finalWidth = enrichedItem?.width || restDim.width || null;
+              const finalHeight = enrichedItem?.height || restDim.height || null;
+              
               const enrichedData = {
                 ...item,
                 weight_grams: enrichedItem?.weight_grams || item.grams || 0,
                 weight_unit: enrichedItem?.weight_unit || 'g',
-                // Real dimensions from Shopify (if available)
-                length: enrichedItem?.length || null,
-                width: enrichedItem?.width || null,
-                height: enrichedItem?.height || null,
+                // Real dimensions from Shopify (GraphQL first, then REST API fallback)
+                length: finalLength,
+                width: finalWidth,
+                height: finalHeight,
               };
               
               // Debug logging for dimensions
-              if (enrichedItem) {
+              if (enrichedItem || restDim.length) {
                 console.log(`   📦 Product: ${item.title || item.name}`);
-                console.log(`      Variant dimensions from API:`, {
-                  length: enrichedItem.length,
-                  width: enrichedItem.width,
-                  height: enrichedItem.height,
-                  has_dimensions: !!(enrichedItem.length && enrichedItem.width && enrichedItem.height)
+                console.log(`      Variant dimensions:`, {
+                  length: finalLength,
+                  width: finalWidth,
+                  height: finalHeight,
+                  source: enrichedItem?.length ? 'GraphQL' : (restDim.length ? 'REST API' : 'none'),
+                  has_dimensions: !!(finalLength && finalWidth && finalHeight)
                 });
               } else {
-                console.log(`   ⚠️ Product: ${item.title || item.name} - No enriched data found from GraphQL`);
+                console.log(`   ⚠️ Product: ${item.title || item.name} - No dimensions found (GraphQL or REST)`);
               }
               
               return enrichedData;
@@ -680,14 +778,13 @@ export const action = async ({ request }) => {
       const orderResult = await mySqlQury(
         `INSERT INTO tbl_ecom_orders 
          (channel, ref_number, orderid, invoice_no, client_id, payment_mode, collectable_amount, warehouse_id, total_weight, weight_unit, grand_total, total_qty, box_qty, total_tax, total_discount, is_unprocessed, shop_name)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           "shopify", // channel
          String(finalPayload.name) || null, // ref_number
           String(finalPayload.order_number) || null, // orderid
           String(finalPayload.order_number) || null, // invoice_no
           0, // client_id
-          String(finalPayload.order_number) || null, // invoice_no
           String(finalPayload.payment_terms) || null, // payment_mode
           Number(finalPayload.total_price) || 0, // collectable_amount
           null, // warehouse_id
@@ -698,12 +795,72 @@ export const action = async ({ request }) => {
           1,
           Number(finalPayload.total_tax) || 0,
           Number(finalPayload.total_discounts) || 0,
-          1,
-          shop || "unknown" // ✅ ADDED: Shop name for client-wise tracking
+          1, // is_unprocessed
+          shop || "unknown" // shop_name - Shopify shop domain (e.g., "dispatch-solutions.myshopify.com")
         ]
       );
 
-      const insertedOrderId = orderResult.insertId;
+      // Get the inserted order ID - handle insertId: 0 issue
+      let insertedOrderId = orderResult.insertId;
+      
+      // If insertId is 0, try multiple fallback methods
+      if (!insertedOrderId || insertedOrderId === 0) {
+        console.log("⚠️ insertId is 0, trying fallback methods...");
+        
+        // Method 1: Use LAST_INSERT_ID() (works within same connection)
+        try {
+          const [lastIdResult] = await mySqlQury(`SELECT LAST_INSERT_ID() as id`);
+          if (lastIdResult && lastIdResult.length > 0 && lastIdResult[0].id > 0) {
+            insertedOrderId = lastIdResult[0].id;
+            console.log("✅ Got ID from LAST_INSERT_ID():", insertedOrderId);
+          }
+        } catch (e) {
+          console.log("⚠️ LAST_INSERT_ID() failed, trying next method...");
+        }
+        
+        // Method 2: Query by orderid (unique identifier from Shopify)
+        if (!insertedOrderId || insertedOrderId === 0) {
+          const shopifyOrderNumber = String(finalPayload.order_number || finalPayload.id || finalPayload.name || '');
+          if (shopifyOrderNumber) {
+            try {
+              const idResult = await mySqlQury(
+                `SELECT id FROM tbl_ecom_orders WHERE orderid = ? ORDER BY id DESC LIMIT 1`,
+                [shopifyOrderNumber]
+              );
+              if (idResult && idResult.length > 0 && idResult[0].id > 0) {
+                insertedOrderId = idResult[0].id;
+                console.log("✅ Got ID from orderid query:", insertedOrderId);
+              }
+            } catch (e) {
+              console.log("⚠️ Query by orderid failed:", e.message);
+            }
+          }
+        }
+        
+        // Method 3: Get the most recent order ID for this shop
+        if (!insertedOrderId || insertedOrderId === 0) {
+          try {
+            const recentResult = await mySqlQury(
+              `SELECT id FROM tbl_ecom_orders WHERE shop_name = ? AND channel = 'shopify' ORDER BY id DESC LIMIT 1`,
+              [shop || "unknown"]
+            );
+            if (recentResult && recentResult.length > 0 && recentResult[0].id > 0) {
+              insertedOrderId = recentResult[0].id;
+              console.log("✅ Got ID from recent order query:", insertedOrderId);
+            }
+          } catch (e) {
+            console.log("⚠️ Recent order query failed:", e.message);
+          }
+        }
+      }
+      
+      // Final validation
+      if (!insertedOrderId || insertedOrderId === 0) {
+        console.error("❌ CRITICAL: Could not get inserted order ID! Related records may fail.");
+        console.error("   Order was inserted but ID retrieval failed.");
+        console.error("   This might cause consignee, products, and boxes to have wrong order_id.");
+      }
+      
       console.log("✅ Order inserted with ID:", insertedOrderId);
       console.log("✅ Order belongs to shop/client:", shop);
       console.log("✅ orderResult :", orderResult);
@@ -713,6 +870,30 @@ export const action = async ({ request }) => {
       // -------------------------------
       const ship = finalPayload.shipping_address || {};
       const bill = finalPayload.billing_address || {};
+      const customer = finalPayload.customer || {};
+
+      // Get phone number with fallback priority:
+      // 1. shipping_address.phone
+      // 2. billing_address.phone
+      // 3. customer.phone
+      // 4. order.phone (if exists)
+      const shippingPhone = ship.phone || null;
+      const billingPhone = bill.phone || null;
+      const customerPhone = customer.phone || null;
+      const orderPhone = finalPayload.phone || null;
+      
+      // Use the first available phone number
+      const phone = shippingPhone || billingPhone || customerPhone || orderPhone || null;
+      
+      // Same for billing phone
+      const billingPhoneFinal = billingPhone || shippingPhone || customerPhone || orderPhone || null;
+
+      console.log("📞 Phone number lookup:");
+      console.log(`   Shipping phone: ${shippingPhone || 'null'}`);
+      console.log(`   Billing phone: ${billingPhone || 'null'}`);
+      console.log(`   Customer phone: ${customerPhone || 'null'}`);
+      console.log(`   Order phone: ${orderPhone || 'null'}`);
+      console.log(`   ✅ Using phone: ${phone || 'null'}`);
 
       await mySqlQury(
         `INSERT INTO tbl_ecom_consignee_details
@@ -724,8 +905,8 @@ export const action = async ({ request }) => {
           insertedOrderId,
           String(ship.first_name) || null,
           String(ship.last_name) || null,
-          String(finalPayload.email || finalPayload.customer?.email) || null,
-          String(ship.phone) || null,
+          String(finalPayload.email || customer.email) || null,
+          phone ? String(phone) : null, // Use phone with fallback
           String(ship.address1) || null,
           String(ship.address2) || null,
           String(ship.country) || null,
@@ -735,8 +916,8 @@ export const action = async ({ request }) => {
           (!bill.first_name && !bill.address1) ? 1 : 0, // billing_same_as_shipping: 1 if billing is empty, else 0
           String(bill.first_name || ship.first_name) || null,
           String(bill.last_name || ship.last_name) || null,
-          String(bill.email || finalPayload.email || finalPayload.customer?.email) || null,
-          String(bill.phone || ship.phone) || null,
+          String(bill.email || finalPayload.email || customer.email) || null,
+          billingPhoneFinal ? String(billingPhoneFinal) : null, // Use billing phone with fallback
           String(bill.address1 || ship.address1) || null,
           String(bill.address2 || ship.address2) || null,
           String(bill.country || ship.country) || null,
@@ -745,7 +926,7 @@ export const action = async ({ request }) => {
           String(bill.zip || ship.zip) || null
         ]
       );
-      console.log("✅ Consignee inserted");
+      console.log("✅ Consignee inserted with phone:", phone || "null");
 
       // -------------------------------
       // 3️⃣ Insert into tbl_ecom_boxes_details
