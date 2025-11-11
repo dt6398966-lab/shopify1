@@ -24,3 +24,7 @@ database.sqlite
 .shopify/*
 .shopify.lock
 .vercel
+
+# Ignore test files with secrets
+test-api-version.js
+test-webhook-with-real-token.js
