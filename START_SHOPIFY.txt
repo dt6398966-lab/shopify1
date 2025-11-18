@@ -1,0 +1,81 @@
+============================================
+🚀 HOW TO START SHOPIFY APP
+============================================
+
+QUICK START (Copy/Paste):
+--------------------------------------------
+cd "C:\Users\Admin\Downloads\shopify-app-completed-1\shopify-app-old-without-start-authentication\shopify-app\dispatch-logistics-connector"
+shopify app dev
+
+
+OR RUN THE SCRIPT:
+--------------------------------------------
+.\HOW_TO_START.ps1
+
+
+STEP-BY-STEP:
+--------------------------------------------
+
+Step 1: Navigate to Project
+----------------------------
+cd "C:\Users\Admin\Downloads\shopify-app-completed-1\shopify-app-old-without-start-authentication\shopify-app\dispatch-logistics-connector"
+
+
+Step 2: Generate Prisma Client (Optional)
+-------------------------------------------
+npx prisma generate
+
+
+Step 3: Start the App
+----------------------
+shopify app dev
+
+
+WHAT HAPPENS:
+--------------------------------------------
+✅ Shopify CLI will:
+   - Create a Cloudflare tunnel automatically
+   - Generate a URL like: https://random-name.trycloudflare.com
+   - Start the development server
+   - Update shopify.app.toml with the new URL
+   - Open the app in your browser
+
+
+WHAT TO LOOK FOR:
+--------------------------------------------
+In the terminal output, you'll see:
+✅ Ready, watching for changes in your app
+└ Using URL: https://YOUR-URL.trycloudflare.com
+
+That's your Cloudflare URL!
+
+
+IMPORTANT NOTES:
+--------------------------------------------
+1. Make sure MySQL database 'dsnew03' is running
+2. Make sure .env file exists with your credentials
+3. The Cloudflare URL changes each time you restart
+4. Keep the terminal open while the app is running
+
+
+TO STOP THE APP:
+--------------------------------------------
+Press: Ctrl + C in the terminal
+
+
+TROUBLESHOOTING:
+--------------------------------------------
+If you see Prisma errors:
+npx prisma generate
+
+If you see port errors:
+- Close other apps using port 3000
+- Or the app will use a random port
+
+If Cloudflare tunnel doesn't work:
+- Check your internet connection
+- Wait a few seconds for tunnel to establish
+- Restart the app
+
+============================================
+

@@ -1,0 +1,49 @@
+============================================
+🌐 CURRENT WORKING CLOUDFLARE URL
+============================================
+
+✅ App is RUNNING successfully!
+
+Base URL:
+https://add-poker-horses-applicants.trycloudflare.com
+
+============================================
+📋 WEBHOOK ENDPOINTS:
+============================================
+
+Orders Webhook:
+https://add-poker-horses-applicants.trycloudflare.com/webhooks/orders/create
+
+Auth Callback:
+https://add-poker-horses-applicants.trycloudflare.com/auth/callback
+
+Auth:
+https://add-poker-horses-applicants.trycloudflare.com/auth
+
+App Uninstalled:
+https://add-poker-horses-applicants.trycloudflare.com/webhooks/app/uninstalled
+
+GDPR Webhooks:
+https://add-poker-horses-applicants.trycloudflare.com/webhooks
+
+============================================
+✅ APP STATUS:
+============================================
+
+✅ App is running
+✅ Cloudflare tunnel active
+✅ Local server: http://localhost:61994/
+✅ GraphiQL: http://localhost:3457/graphiql
+✅ Preview URL: https://dispatch-solutions.myshopify.com/admin/oauth/redirect_from_cli?client_id=f39b70fd55542365c109655d5335793e
+
+============================================
+📝 NOTES:
+============================================
+
+- The Cloudflare URL is automatically created by Shopify CLI
+- URL changes each time you restart the app
+- Keep the terminal open while app is running
+- Webhooks will now work for order #1017!
+
+============================================
+

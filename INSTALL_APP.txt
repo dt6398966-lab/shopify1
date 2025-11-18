@@ -1,0 +1,95 @@
+============================================
+📱 HOW TO INSTALL SHOPIFY APP
+============================================
+
+QUICK METHOD (Easiest):
+--------------------------------------------
+
+Step 1: Make sure app is running
+---------------------------------
+In your terminal, you should see:
+✅ Ready, watching for changes in your app
+└ Using URL: https://alumni-closed-groove-amounts.trycloudflare.com
+
+If not running, start it:
+cd "C:\Users\Admin\Downloads\shopify-app-completed-1\shopify-app-old-without-start-authentication\shopify-app\dispatch-logistics-connector"
+shopify app dev
+
+
+Step 2: Copy Preview URL from Terminal
+---------------------------------------
+Look for this line in your terminal:
+Preview URL: https://dispatch-solutions.myshopify.com/admin/oauth/redirect_from_cli?client_id=f39b70fd55542365c109655d5335793e
+
+Copy this URL and paste it in your browser!
+
+
+Step 3: Click "Install app" or "Allow"
+--------------------------------------
+The browser will show an authorization screen.
+Click "Install app" to authorize.
+
+
+Step 4: Done!
+-------------
+The app will be installed and webhooks will be registered automatically.
+
+
+============================================
+ALTERNATIVE METHOD (Through Shopify Admin):
+============================================
+
+1. Go to: https://admin.shopify.com/store/dispatchsolutions-2
+
+2. Click "Apps" in left sidebar
+
+3. Find "Dispatch Solutions" in the list
+
+4. If NOT installed: Click "Add app" or "Install"
+   If ALREADY installed: Click on it → "Uninstall" → Then "Install" again
+
+5. Click "Install app" or "Allow" on authorization screen
+
+
+============================================
+TO RE-INSTALL (Fix Webhook Issues):
+============================================
+
+1. Go to Shopify Admin → Apps
+
+2. Click on "Dispatch Solutions"
+
+3. Scroll down and click "Uninstall"
+
+4. Confirm uninstallation
+
+5. Go back to Apps → Click "Add app" or find "Dispatch Solutions"
+
+6. Click "Install"
+
+7. Authorize the app
+
+
+============================================
+VERIFY INSTALLATION:
+============================================
+
+After installation, check your terminal for:
+✅ Custom webhook config created
+✅ Webhook created: orders/create
+
+Then place a test order and check:
+node check-order-1050.js
+
+
+============================================
+CURRENT CLOUDFLARE URL:
+============================================
+
+https://alumni-closed-groove-amounts.trycloudflare.com
+
+Make sure app is running with this URL!
+
+
+============================================
+
